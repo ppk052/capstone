@@ -17,7 +17,7 @@
 
         /* 네비게이션 바 스타일 */
         .navbar {
-            height: 5vh;
+            height: 8vh;
             background-color: #007bff;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
@@ -42,11 +42,12 @@
             display: grid;
             grid-template-columns: repeat(2, 1fr); /* 두 개의 열로 배치 */
             gap: 10px; /* 아이템 사이의 간격 */
-            height: calc(92vh); /* 네비바 높이 제외 */
+            height: calc(89vh); /* 네비바 높이 제외 */
             padding: 10px;
         }
 
         .sensor-box {
+            position: relative;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -54,7 +55,7 @@
             border: 1px solid #ddd;
             border-radius: 8px;
             box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-            font-size: 1.2rem;
+            font-size: 2rem;
             font-weight: bold;
             color: #333;
             padding: 20px;
@@ -62,7 +63,7 @@
 
         /* 큰 박스 */
         .big-box {
-            height: calc(89vh / 3); /* 큰 박스 3개 */
+            height: calc(83.6vh / 3); /* 큰 박스 3개 */
             display: flex;
             align-items: center;
             justify-content: center;
@@ -74,6 +75,7 @@
             font-size: 1.5rem;
             font-weight: bold;
             color: #333;
+            position: relative;
         }
 
         /* 드롭박스 스타일 */
@@ -81,6 +83,36 @@
             border-radius: 10px;
             border: 1px solid #007bff;
         }
+
+        .text-left-top {
+            position: absolute; /* 절대 위치 지정 */
+            top: 20px; /* 위쪽 여백 조정 */
+            left: 20px; /* 왼쪽 여백 조정 */
+            text-align: left;
+            font-size: 1.5rem; /* 크기를 조금 줄일 수도 있음 */
+        }
+
+        .toggle-btn {
+            width: 80px;
+            height: 40px;
+            font-size: 1rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            color: white;
+            background-color: green; /* 기본 색상 */
+            transition: background-color 0.3s;
+        }
+        
+        .toggle-btn.on {
+            background-color: green; /* ON 상태일 때 */
+        }
+        
+        .toggle-btn.off {
+            background-color: red; /* OFF 상태일 때 */
+        }
+
     </style>
 </head>
 <body>
@@ -93,13 +125,31 @@
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
             <form class="d-flex ms-auto w-25">
-                <select class="form-select w-100">
-                    <option selected>옵션 선택</option>
-                    <option value="1">옵션 1</option>
-                    <option value="2">옵션 2</option>
-                    <option value="3">옵션 3</option>
+                <select class="form-select w-100" id="deviceOnOff" onchange="checkAddOption()">
+                    <option value="" selected disabled>🌱 식물 선택</option> 
+                    <option value="add-option">➕ 옵션 추가</option> 
                 </select>
             </form>
+
+            <!-- 옵션 추가 모달 -->
+            <div class="modal fade" id="addOptionModal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">새 옵션 추가</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <input type="text" id="newOptionText" class="form-control mb-2" placeholder="식물 이름">
+                            <input type="text" id="newOptionValue" class="form-control" placeholder="식물 ID">
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+                            <button type="button" class="btn btn-primary" onclick="addDropdownOption()">추가</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </nav>
@@ -109,23 +159,49 @@
     <div class="row">
         <!-- 센서 값 + 적정 값 박스 (왼쪽) -->
         <div class="col-md-6 sensor-container">
-            <div class="sensor-box">센서값1</div>
-            <div class="sensor-box">적정값1</div>
-            <div class="sensor-box">센서값2</div>
-            <div class="sensor-box">적정값2</div>
-            <div class="sensor-box">센서값3</div>
-            <div class="sensor-box">적정값3</div>
-            <div class="sensor-box">센서값4</div>
-            <div class="sensor-box">적정값4</div>
+            <div class="sensor-box">
+                <div class="text-left-top">토양수분</div>
+                <div id="landMoisture">0%</div>
+            </div>
+            <div class="sensor-box">
+                <div class="text-left-top">적정토양수분</div>
+                <div id="landMoistureAppropriate" th:text="${landMoistureAppropriate}">0%</div>
+            </div>
+            <div class="sensor-box">
+                <div class = "text-left-top">기온</div>
+                <div id="temperature">0°C</div>
+            </div>
+            <div class="sensor-box">
+                <div class="text-left-top">적정기온</div>
+                <div id="temperatureAppropriate" th:text="${temperatureAppropriate}">0°C</div>
+            </div>
+            <div class="sensor-box">
+                <div class="text-left-top">조도</div>
+                <div id="light">0lx</div>
+            </div>
+            <div class="sensor-box">
+                <div class="text-left-top">적정조도</div>
+                <div id="lightAppropriate" th:text="${lightAppropriate}">0lx</div>
+            </div>
         </div>
 
         <!-- 오른쪽 큰 박스 -->
         <div class="col-md-6">
-            <div class="big-box">큰 박스 1</div>
-            <div class="big-box">큰 박스 2</div>
-            <div class="big-box">큰 박스 3</div>
+            <div class="big-box">
+                <div class="text-left-top">물펌프</div>
+                <button id="pumpBtn" class="toggle-btn off" onclick="toggleDevice('pump')">OFF</button>
+            </div>
+            <div class="big-box">
+                <div class="text-left-top">팬</div>
+                <button id="fanBtn" class="toggle-btn off" onclick="toggleDevice('fan')">OFF</button>
+            </div>
+            <div class="big-box">
+                <div class="text-left-top">LED</div>
+                <button id="LEDBtn" class="toggle-btn off" onclick="toggleDevice('LED')">OFF</button>
+            </div>
         </div>
     </div>
 </div>
+<script src="/js/sensor.js"></script>
 </body>
 </html>

@@ -25,18 +25,31 @@ public class Plant {
     private PlantType plantType;
 
     @OneToMany(fetch = FetchType.LAZY)
+    @OrderBy("time DESC")
     @Column
     private List<SensorData> landMoisture;
 
     @OneToMany(fetch = FetchType.LAZY)
+    @OrderBy("time DESC")
     @Column
     private List<SensorData> temperature;
 
     @OneToMany(fetch = FetchType.LAZY)
+    @OrderBy("time DESC")
     @Column
     private List<SensorData> moisture;
 
     @OneToMany(fetch = FetchType.LAZY)
+    @OrderBy("time DESC")
     @Column
     private List<SensorData> light;
+
+    @Column
+    private boolean led;
+
+    @Column
+    private boolean pump;
+
+    @Column
+    private boolean fan;
 }

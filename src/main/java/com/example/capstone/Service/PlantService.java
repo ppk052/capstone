@@ -39,6 +39,9 @@ public class PlantService {
         return plantRepository.save(Plant.builder()
                 .name(name)
                 .plantType(plantType)
+                .led(false)
+                .pump(false)
+                .fan(false)
                 .build()).getId();
     }
 
@@ -64,7 +67,7 @@ public class PlantService {
         return plantRepository.existsById(id);
     }
 
-    public void addSensorData(Long id, float landMoisture, float temperature, float moisture, float light ) {
+    public void addSensorData(Long id, float landMoisture, float temperature, float moisture, float light, boolean led, boolean pump, boolean fan ) {
         Plant target = plantRepository.findById(id).get();
         List<SensorData> landMoistures = target.getLandMoisture();
         List<SensorData> temperatures = target.getTemperature();
@@ -95,10 +98,65 @@ public class PlantService {
                 .temperature(temperatures)
                 .moisture(moistures)
                 .light(lights)
+                .led(led)
+                .pump(pump)
+                .fan(fan)
                 .build());
     }
 
     public PlantAppropriateValue getAppropriateValue(PlantType plantType) {
         return plantAppropriateValueRepository.findByPlantType(plantType).get();
+    }
+
+    public void deviceToggle(Long id, String deviceName, boolean state) {
+        if(plantRepository.existsById(id)) {
+            Plant plant = plantRepository.findById(id).get();
+            switch(deviceName) {
+                case "pump":
+                    plantRepository.save(Plant.builder()
+                            .id(plant.getId())
+                            .name(plant.getName())
+                            .plantType(plant.getPlantType())
+                            .landMoisture(plant.getLandMoisture())
+                            .temperature(plant.getTemperature())
+                            .moisture(plant.getMoisture())
+                            .light(plant.getLight())
+                            .fan(plant.isFan())
+                            .led(plant.isLed())
+                            .pump(state)
+                            .build());
+                    break;
+                case "fan":
+                    plantRepository.save(Plant.builder()
+                            .id(plant.getId())
+                            .name(plant.getName())
+                            .plantType(plant.getPlantType())
+                            .landMoisture(plant.getLandMoisture())
+                            .temperature(plant.getTemperature())
+                            .moisture(plant.getMoisture())
+                            .light(plant.getLight())
+                            .fan(state)
+                            .led(plant.isLed())
+                            .pump(plant.isPump())
+                            .build());
+                    break;
+                case "LED":
+                    plantRepository.save(Plant.builder()
+                            .id(plant.getId())
+                            .name(plant.getName())
+                            .plantType(plant.getPlantType())
+                            .landMoisture(plant.getLandMoisture())
+                            .temperature(plant.getTemperature())
+                            .moisture(plant.getMoisture())
+                            .light(plant.getLight())
+                            .fan(plant.isFan())
+                            .led(state)
+                            .pump(plant.isPump())
+                            .build());
+                    break;
+                default:
+                    throw new IllegalArgumentException("장치종류가 올바르지 않습니다!");
+            }
+        }
     }
 }

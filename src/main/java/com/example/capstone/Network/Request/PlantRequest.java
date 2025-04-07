@@ -25,4 +25,10 @@ public class PlantRequest {
     private float light;
 
     private int type;
+
+    private boolean LED;
+
+    private boolean pump;
+
+    private boolean fan;
 }

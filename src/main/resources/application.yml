@@ -1,3 +1,28 @@
 spring:
   application:
-    name: "capstone"
+    name: capstone
+  datasource:
+    url : jdbc:mysql://where-database.c5i8wo8ggixs.ap-northeast-2.rds.amazonaws.com/where_database
+    username : admin
+    password : dream61398
+  jpa:
+    database-platform: org.hibernate.dialect.MySQL8Dialect
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        highlight_sql: true
+    hibernate:
+      ddl-auto: update
+  web:
+    resources:
+      static-locations: classpath:/static/
+#logging:
+#  level:
+#    org:
+#      hibernate:
+#        type:
+#          descriptor:
+#            sql: trace
+server:
+  port: 80

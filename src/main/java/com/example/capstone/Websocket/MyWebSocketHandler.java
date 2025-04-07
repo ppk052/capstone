@@ -44,11 +44,12 @@ public class MyWebSocketHandler extends TextWebSocketHandler {
 
         String payload = message.getPayload();
         PlantRequest request = convertToObject(payload);
-        PlantAppropriateValue appropriateValue = plantService.getAppropriateValue(PlantType.valueOf(request.getPlantType()));
         log.info("웹소켓 연결됨 : " + session.getId());
+        log.info("메세지내용 : " + request.toString());
         switch(request.getType()) {
             //새식물
             case 0:
+                PlantAppropriateValue appropriateValue = plantService.getAppropriateValue(PlantType.valueOf(request.getPlantType()));
                 Long newPlantId = plantService.newPlant(request.getName(),request.getPlantType());
                 sessions.put(newPlantId,session);
                 session.sendMessage(new TextMessage(convertToJson(NewPlantResponse.builder()
@@ -71,7 +72,7 @@ public class MyWebSocketHandler extends TextWebSocketHandler {
                 break;
             //센서데이터전송
             case 2:
-                plantService.addSensorData(request.getId(), request.getLandMoisture(), request.getTemperature(), request.getMoisture(), request.getLight());
+                plantService.addSensorData(request.getId(), request.getLandMoisture(), request.getTemperature(), request.getMoisture(), request.getLight(), request.isLED(), request.isPump(), request.isFan());
                 break;
             default:
                 break;
