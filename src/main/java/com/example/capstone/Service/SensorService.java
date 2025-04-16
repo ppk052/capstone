@@ -48,6 +48,9 @@ public class SensorService {
                 sensorData.put("landMoistureAppropriate",plantValue.getMoisture());
                 sensorData.put("temperatureAppropriate",plantValue.getTemperature());
                 sensorData.put("lightAppropriate",plantValue.getLight());
+                sensorData.put("LEDAuto",targetPlant.get().isLedAuto());
+                sensorData.put("pumpAuto",targetPlant.get().isPumpAuto());
+                sensorData.put("fanAuto",targetPlant.get().isFanAuto());
                 return sensorData;
             } else {
                 throw new IllegalArgumentException("id가 올바르지 않습니다!");

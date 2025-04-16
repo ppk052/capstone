@@ -72,7 +72,11 @@ public class MyWebSocketHandler extends TextWebSocketHandler {
                 break;
             //센서데이터전송
             case 2:
-                plantService.addSensorData(request.getId(), request.getLandMoisture(), request.getTemperature(), request.getMoisture(), request.getLight(), request.isLED(), request.isPump(), request.isFan());
+                plantService.addSensorData(request.getId(), request.getLandMoisture(), request.getTemperature(), request.getMoisture(), request.getLight());
+                break;
+            //장치상태온오프
+            case 3:
+                plantService.deviceToggle(request.getId(), request.getName(), request.isNewState());
                 break;
             default:
                 break;

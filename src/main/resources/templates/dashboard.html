@@ -113,6 +113,14 @@
             background-color: red; /* OFF 상태일 때 */
         }
 
+        .toggle-btn.auto {
+            background-color: yellow;
+        }
+
+        .toggle-btn.manual {
+            background-color: blue;
+        }
+
     </style>
 </head>
 <body>
@@ -190,14 +198,17 @@
             <div class="big-box">
                 <div class="text-left-top">물펌프</div>
                 <button id="pumpBtn" class="toggle-btn off" onclick="toggleDevice('pump')">OFF</button>
+                <button id="pumpModeBtn" class="toggle-btn mode" onclick="toggleMode('pump')">수동</button>
             </div>
             <div class="big-box">
                 <div class="text-left-top">팬</div>
                 <button id="fanBtn" class="toggle-btn off" onclick="toggleDevice('fan')">OFF</button>
+                <button id="fanModeBtn" class="toggle-btn mode" onclick="toggleMode('fan')">수동</button>
             </div>
             <div class="big-box">
                 <div class="text-left-top">LED</div>
                 <button id="LEDBtn" class="toggle-btn off" onclick="toggleDevice('LED')">OFF</button>
+                <button id="LEDModeBtn" class="toggle-btn mode" onclick="toggleMode('LED')">수동</button>
             </div>
         </div>
     </div>

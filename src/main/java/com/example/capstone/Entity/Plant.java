@@ -52,4 +52,13 @@ public class Plant {
 
     @Column
     private boolean fan;
+
+    @Column
+    private boolean ledAuto;
+
+    @Column
+    private boolean pumpAuto;
+
+    @Column
+    private boolean fanAuto;
 }

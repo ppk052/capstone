@@ -56,6 +56,12 @@ function loadOptions() {
 }
 
 function fetchSensorData(plantId) {
+    const LEDModeBtn = document.getElementById('LEDModeBtn');
+    const pumpModeBtn = document.getElementById('pumpModeBtn');
+    const fanModeBtn = document.getElementById('fanModeBtn');
+    const LEDBtn = document.getElementById("LEDBtn");
+    const pumpBtn = document.getElementById("pumpBtn");
+    const fanBtn = document.getElementById("fanBtn");
     fetch(`/api/sensor/${plantId}`)
         .then(response => response.json())
         .then(data => {
@@ -65,13 +71,89 @@ function fetchSensorData(plantId) {
             document.getElementById("landMoistureAppropriate").innerText = data.landMoistureAppropriate + "%";
             document.getElementById("temperatureAppropriate").innerText = data.temperatureAppropriate + "°C";
             document.getElementById("lightAppropriate").innerText = data.lightAppropriate + "lx";
+            if(data.LEDAuto) {
+                LEDModeBtn.innerText = '자동';
+            } else {
+                LEDModeBtn.innerText = '수동';
+            }
+            LEDModeBtn.classList.toggle("auto",data.LEDAuto);
+            LEDModeBtn.classList.toggle("manual",!data.LEDAuto);
+            if(data.pumpAuto) {
+                pumpModeBtn.innerText = '자동';
+            } else {
+                pumpModeBtn.innerText = '수동';
+            }
+            pumpModeBtn.classList.toggle("auto",data.pumpAuto);
+            pumpModeBtn.classList.toggle("manual",!data.pumpAuto);
+            if(data.fanAuto) {
+                fanModeBtn.innerText = '자동';
+            } else {
+                fanModeBtn.innerText = '수동';
+            }
+            fanModeBtn.classList.toggle("auto",data.fanAuto);
+            fanModeBtn.classList.toggle("manual",!data.fanAuto);
+            if(data.LED) {
+                LEDBtn.innerText = 'on';
+            } else {
+                LEDBtn.innerText = 'off';
+            }
+            LEDBtn.classList.toggle("on",data.LED);
+            LEDBtn.classList.toggle("off",data.LED);
+            if(data.pump) {
+                pumpBtn.innerText = 'on';
+            } else {
+                pumpBtn.innerText = 'off';
+            }
+            pumpBtn.classList.toggle("on",data.pump);
+            pumpBtn.classList.toggle("off",!data.pump);
+            if(data.fan) {
+                fanBtn.innerText = 'on';
+            } else {
+                fanBtn.innerText = 'off';
+            }
+            fanBtn.classList.toggle("on",data.fan);
+            fanBtn.classList.toggle("off",!data.fan);
         })
         .catch(error => console.error(error));
 }
 
+//자동수동버튼
+function toggleMode(device) {
+    const modeBtn = document.getElementById(device + 'ModeBtn');
+    const currentState = modeBtn.classList.contains("auto");
+    const newState = !currentState;
+
+    // 서버로 상태 변경 요청 보내기
+    fetch(`/api/device/auto`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ plantId: plantId, device: device , state: newState })
+    })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error("서버 오류");
+            }
+            return response.text().then(text => text ? JSON.parse(text) : null);
+        })
+        .then(data => {
+            // UI 업데이트
+            modeBtn.innerText = newState ? "자동" : "수동"; // 글자 변경
+            modeBtn.classList.toggle("auto", newState);
+            modeBtn.classList.toggle("manual", !newState);
+        })
+        .catch(error => console.error("장치 상태 변경 실패:", error));
+}
+
+//장치 온오프
 function toggleDevice(device) {
     const btn = document.getElementById(device + "Btn"); // 버튼 요소 찾기
     const currentState = btn.classList.contains("on"); // 현재 상태 (ON인지 확인)
+    const autoState = document.getElementById(device + 'ModeBtn').classList.contains('auto');
+
+    if(autoState) {
+        alert('먼저 자동모드를 수동모드로 변경해주세요');
+        return;
+    }
 
     // 새로운 상태 결정 (ON → OFF, OFF → ON)
     const newState = !currentState;

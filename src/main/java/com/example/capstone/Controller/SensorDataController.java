@@ -28,12 +28,26 @@ public class SensorDataController {
         return ResponseEntity.ok(sensorService.getSonsorData(id));
     }
 
-    //장소제어온오프
+    //장치제어온오프
     @PostMapping("/api/device")
     public ResponseEntity<Void> deviceToggle(@RequestBody DeviceToggleRequest request) {
         log.info("온오프요청 : " + request.toString());
         plantService.deviceToggle(request.getPlantId(), request.getDevice(), request.isNewState());
-        String message = "{\"" + request.getDevice() + "\":" + request.isNewState() + "}";
+        String message = switch (request.getDevice()) {
+            case "pump" -> "{\"type\":2, \"switch\":" + request.isNewState() + "}";
+            case "fan" -> "{\"type\":4, \"switch\":" + request.isNewState() + "}";
+            case "LED" -> "{\"type\":1, \"switch\":" + request.isNewState() + "}";
+            default -> "";
+        };
+        myWebSocketHandler.sendMessageToClient(request.getPlantId(), message);
+        return ResponseEntity.ok().build();
+    }
+
+    //장치자동수동
+    @PostMapping("/api/device/auto")
+    public ResponseEntity<Void> autoToggle(@RequestBody DeviceToggleRequest request) {
+        plantService.deviceAuto(request.getPlantId(),request.getDevice(),request.isNewState());
+        String message = "{\"type: 5, \"device\": " + request.getDevice() + "\"switch\": " + request.isNewState() + "}";
         myWebSocketHandler.sendMessageToClient(request.getPlantId(), message);
         return ResponseEntity.ok().build();
     }

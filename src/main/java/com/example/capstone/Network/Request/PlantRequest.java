@@ -26,9 +26,5 @@ public class PlantRequest {
 
     private int type;
 
-    private boolean LED;
-
-    private boolean pump;
-
-    private boolean fan;
+    private boolean newState;
 }
