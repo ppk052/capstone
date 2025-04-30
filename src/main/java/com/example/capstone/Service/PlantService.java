@@ -59,6 +59,7 @@ public class PlantService {
         //log.warn("센서데이터추가 : 토양 "+landMoisture + ", 온도 " + temperature + ", 조도" + light);
         Plant target = plantRepository.findById(id).get();
         LocalDateTime time = LocalDateTime.now();
+        time = time.plusHours(9);
         sensorDataRepository.save(SensorData.builder()
                 .plant(target)
                 .dataType(DataType.LandMoisture)
@@ -150,7 +151,7 @@ public class PlantService {
                             .plantType(plant.getPlantType())
                             .fan(plant.isFan())
                             .led(plant.isLed())
-                            .pump(plant.isLed())
+                            .pump(plant.isPump())
                             .fanAuto(plant.isFanAuto())
                             .ledAuto(plant.isLedAuto())
                             .pumpAuto(state)
@@ -163,6 +164,7 @@ public class PlantService {
                             .plantType(plant.getPlantType())
                             .led(plant.isLed())
                             .pump(plant.isPump())
+                            .fan(plant.isFan())
                             .fanAuto(state)
                             .ledAuto(plant.isLedAuto())
                             .pumpAuto(plant.isPumpAuto())
