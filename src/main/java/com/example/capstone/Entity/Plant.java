@@ -8,6 +8,7 @@ import java.util.List;
 
 @Entity
 @Getter
+@Setter
 @ToString
 @Builder
 @AllArgsConstructor
@@ -24,25 +25,25 @@ public class Plant {
     @Column(nullable = false)
     private PlantType plantType;
 
-    @OneToMany(fetch = FetchType.LAZY)
-    @OrderBy("time DESC")
-    @Column
-    private List<SensorData> landMoisture;
-
-    @OneToMany(fetch = FetchType.LAZY)
-    @OrderBy("time DESC")
-    @Column
-    private List<SensorData> temperature;
-
-    @OneToMany(fetch = FetchType.LAZY)
-    @OrderBy("time DESC")
-    @Column
-    private List<SensorData> moisture;
-
-    @OneToMany(fetch = FetchType.LAZY)
-    @OrderBy("time DESC")
-    @Column
-    private List<SensorData> light;
+//    @OneToMany(fetch = FetchType.LAZY)
+//    @OrderBy("time DESC")
+//    @Column
+//    private List<SensorData> landMoisture;
+//
+//    @OneToMany(fetch = FetchType.LAZY)
+//    @OrderBy("time DESC")
+//    @Column
+//    private List<SensorData> temperature;
+//
+//    @OneToMany(fetch = FetchType.LAZY)
+//    @OrderBy("time DESC")
+//    @Column
+//    private List<SensorData> moisture;
+//
+//    @OneToMany(fetch = FetchType.LAZY)
+//    @OrderBy("time DESC")
+//    @Column
+//    private List<SensorData> light;
 
     @Column
     private boolean led;

@@ -11,6 +11,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.Map;
 
 @Slf4j
@@ -25,13 +26,14 @@ public class SensorDataController {
     //각종제어장치 넣어야됨
     @GetMapping("/api/sensor/{id}")
     public ResponseEntity<Map<String, Object>> sendSensorData(@PathVariable("id") Long id) {
-        return ResponseEntity.ok(sensorService.getSonsorData(id));
+        Map<String, Object> response = sensorService.getSonsorData(id);
+        return ResponseEntity.ok(response);
     }
 
     //장치제어온오프
     @PostMapping("/api/device")
     public ResponseEntity<Void> deviceToggle(@RequestBody DeviceToggleRequest request) {
-        log.info("온오프요청 : " + request.toString());
+        log.warn("온오프요청 : " + request.toString());
         plantService.deviceToggle(request.getPlantId(), request.getDevice(), request.isNewState());
         String message = switch (request.getDevice()) {
             case "pump" -> "{\"type\":2, \"switch\":" + request.isNewState() + "}";
@@ -46,8 +48,9 @@ public class SensorDataController {
     //장치자동수동
     @PostMapping("/api/device/auto")
     public ResponseEntity<Void> autoToggle(@RequestBody DeviceToggleRequest request) {
+        log.warn("자동토글들어옴 " + request.toString());
         plantService.deviceAuto(request.getPlantId(),request.getDevice(),request.isNewState());
-        String message = "{\"type: 5, \"device\": " + request.getDevice() + "\"switch\": " + request.isNewState() + "}";
+        String message = "{\"type\": 5, \"device\": \"" + request.getDevice() + "\",\"switch\": " + request.isNewState() + "}";
         myWebSocketHandler.sendMessageToClient(request.getPlantId(), message);
         return ResponseEntity.ok().build();
     }

@@ -3,12 +3,61 @@ let plantId = 0;
 // "옵션 추가" 선택 시 모달 창 띄우기
 function checkAddOption() {
     let select = document.getElementById("deviceOnOff");
-    if (select.value === "add-option") {
+    let selectedValue = select.value;
+    if (selectedValue === "add-option") {
         let modal = new bootstrap.Modal(document.getElementById("addOptionModal"));
         modal.show();
-        select.value = ""; // 기본 선택 상태로 변경
+    } else if (selectedValue === "manage-option"){
+        let manageModal = new bootstrap.Modal(document.getElementById("manageOptionModal"));
+        manageModal.show();
     }
 }
+
+// 옵션 목록을 동적으로 표시하는 함수
+function loadManageOptions() {
+    let options = JSON.parse(localStorage.getItem("dropdownOptions")) || [];
+    let optionList = document.getElementById("optionList");
+
+    // 기존 목록 초기화
+    optionList.innerHTML = "";
+
+    options.forEach(({ text, value }) => {
+        let div = document.createElement("div");
+        div.classList.add("d-flex", "justify-content-between", "align-items-center", "mb-2");
+        div.style.color = "black";
+        div.innerHTML = `
+            <span>${text}</span>
+            <button class="btn btn-danger btn-sm" onclick="deleteOption('${value}')">삭제</button>
+        `;
+        optionList.appendChild(div);
+    });
+}
+
+// 식물 삭제 함수
+function deleteOption(value) {
+    let options = JSON.parse(localStorage.getItem("dropdownOptions")) || [];
+    let updatedOptions = options.filter(option => option.value !== value);
+    localStorage.setItem("dropdownOptions", JSON.stringify(updatedOptions));
+
+    // 드롭다운에서 삭제
+    let select = document.getElementById("deviceOnOff");
+    let selectedOption = select.querySelector(`option[value="${value}"]`);
+    if (selectedOption) {
+        selectedOption.remove();
+    }
+
+    // 현재 선택된 옵션이면 초기화
+    if (select.value === value) {
+        select.value = "";
+    }
+
+    // 옵션 목록 다시 로드
+    loadManageOptions();
+}
+
+// "옵션 관리" 모달이 열릴 때 목록 불러오기
+document.getElementById("manageOptionModal").addEventListener("show.bs.modal", loadManageOptions);
+
 
 // 새 옵션 추가 및 localStorage 저장
 function addDropdownOption() {
@@ -67,52 +116,53 @@ function fetchSensorData(plantId) {
         .then(data => {
             document.getElementById("landMoisture").innerText = data.landMoisture + "%";
             document.getElementById("temperature").innerText = data.temperature + "°C";
-            document.getElementById("light").innerText = data.light + "lx";
+            document.getElementById("light").innerText = data.light + "lux";
             document.getElementById("landMoistureAppropriate").innerText = data.landMoistureAppropriate + "%";
             document.getElementById("temperatureAppropriate").innerText = data.temperatureAppropriate + "°C";
-            document.getElementById("lightAppropriate").innerText = data.lightAppropriate + "lx";
-            if(data.LEDAuto) {
-                LEDModeBtn.innerText = '자동';
-            } else {
-                LEDModeBtn.innerText = '수동';
-            }
-            LEDModeBtn.classList.toggle("auto",data.LEDAuto);
-            LEDModeBtn.classList.toggle("manual",!data.LEDAuto);
-            if(data.pumpAuto) {
-                pumpModeBtn.innerText = '자동';
-            } else {
-                pumpModeBtn.innerText = '수동';
-            }
-            pumpModeBtn.classList.toggle("auto",data.pumpAuto);
-            pumpModeBtn.classList.toggle("manual",!data.pumpAuto);
-            if(data.fanAuto) {
-                fanModeBtn.innerText = '자동';
-            } else {
-                fanModeBtn.innerText = '수동';
-            }
-            fanModeBtn.classList.toggle("auto",data.fanAuto);
-            fanModeBtn.classList.toggle("manual",!data.fanAuto);
+            document.getElementById("lightAppropriate").innerText = data.lightAppropriate + "lux";
             if(data.LED) {
-                LEDBtn.innerText = 'on';
+                LEDBtn.innerText = 'ON';
             } else {
-                LEDBtn.innerText = 'off';
+                LEDBtn.innerText = 'OFF';
             }
             LEDBtn.classList.toggle("on",data.LED);
-            LEDBtn.classList.toggle("off",data.LED);
+            LEDBtn.classList.toggle("off",!data.LED);
             if(data.pump) {
-                pumpBtn.innerText = 'on';
+                pumpBtn.innerText = 'ON';
             } else {
-                pumpBtn.innerText = 'off';
+                pumpBtn.innerText = 'OFF';
             }
             pumpBtn.classList.toggle("on",data.pump);
             pumpBtn.classList.toggle("off",!data.pump);
             if(data.fan) {
-                fanBtn.innerText = 'on';
+                fanBtn.innerText = 'ON';
             } else {
-                fanBtn.innerText = 'off';
+                fanBtn.innerText = 'OFF';
             }
             fanBtn.classList.toggle("on",data.fan);
             fanBtn.classList.toggle("off",!data.fan);
+            if(data.LEDAuto) {
+                LEDModeBtn.innerText = "자동";
+            } else {
+                LEDModeBtn.innerText = "수동";
+            }
+            LEDModeBtn.classList.toggle("auto", data.LEDAuto);
+            LEDModeBtn.classList.toggle("manual", !data.LEDAuto);
+            if(data.pumpAuto) {
+                pumpModeBtn.innerText = "자동";
+            } else {
+                pumpModeBtn.innerText = "수동";
+            }
+            pumpModeBtn.classList.toggle("auto", data.pumpAuto);
+            pumpModeBtn.classList.toggle("manual", !data.pumpAuto);
+            if(data.fanAuto) {
+                fanModeBtn.innerText = "자동";
+            } else {
+                fanModeBtn.innerText = "수동";
+            }
+            fanModeBtn.classList.toggle("auto", data.fanAuto);
+            fanModeBtn.classList.toggle("manual", !data.fanAuto);
+            console.log("마지막 센서시간 : " + data.lastSenorTime);
         })
         .catch(error => console.error(error));
 }
@@ -123,11 +173,13 @@ function toggleMode(device) {
     const currentState = modeBtn.classList.contains("auto");
     const newState = !currentState;
 
+    console.log('자동제어');
+    console.log(JSON.stringify({ plantId: plantId, device: device , newState: newState }));
     // 서버로 상태 변경 요청 보내기
     fetch(`/api/device/auto`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ plantId: plantId, device: device , state: newState })
+        body: JSON.stringify({ plantId: plantId, device: device , newState: newState })
     })
         .then(response => {
             if (!response.ok) {
@@ -136,6 +188,7 @@ function toggleMode(device) {
             return response.text().then(text => text ? JSON.parse(text) : null);
         })
         .then(data => {
+            console.log('전송완료');
             // UI 업데이트
             modeBtn.innerText = newState ? "자동" : "수동"; // 글자 변경
             modeBtn.classList.toggle("auto", newState);
@@ -149,20 +202,20 @@ function toggleDevice(device) {
     const btn = document.getElementById(device + "Btn"); // 버튼 요소 찾기
     const currentState = btn.classList.contains("on"); // 현재 상태 (ON인지 확인)
     const autoState = document.getElementById(device + 'ModeBtn').classList.contains('auto');
-
+    // 새로운 상태 결정 (ON → OFF, OFF → ON)
+    const newState = !currentState;
     if(autoState) {
         alert('먼저 자동모드를 수동모드로 변경해주세요');
         return;
     }
-
-    // 새로운 상태 결정 (ON → OFF, OFF → ON)
-    const newState = !currentState;
+    console.log('장치온오프');
+    console.log(JSON.stringify({ plantId: plantId, device: device , newState: newState }));
 
     // 서버로 상태 변경 요청 보내기
     fetch(`/api/device`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ plantId: plantId, device: device , state: newState })
+        body: JSON.stringify({ plantId: plantId, device: device , newState: newState })
     })
         .then(response => {
             if (!response.ok) {
@@ -171,6 +224,7 @@ function toggleDevice(device) {
             return response.text().then(text => text ? JSON.parse(text) : null);
         })
         .then(data => {
+            console.log("전송완료");
             // UI 업데이트
             btn.innerText = newState ? "ON" : "OFF"; // 글자 변경
             btn.classList.toggle("on", newState);
@@ -182,6 +236,6 @@ document.addEventListener("DOMContentLoaded", loadOptions);
 document.getElementById("deviceOnOff").addEventListener("change", function () {
     plantId = this.value;
     fetchSensorData(plantId);
+    setInterval(() => fetchSensorData(plantId), 1000);
 })
-setInterval(() => fetchSensorData(plantId), 3000);
 fetchSensorData(0);

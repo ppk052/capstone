@@ -11,4 +11,16 @@ import lombok.*;
 public class LoadPlantResponse {
 
     private int type;
+
+    private int moisture;
+
+    private int temperature;
+
+    private int light;
+
+    private boolean ledAuto;
+
+    private boolean pumpAuto;
+
+    private boolean fanAuto;
 }

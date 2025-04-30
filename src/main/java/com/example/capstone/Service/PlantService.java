@@ -1,5 +1,6 @@
 package com.example.capstone.Service;
 
+import com.example.capstone.Constant.DataType;
 import com.example.capstone.Entity.Plant;
 import com.example.capstone.Entity.PlantAppropriateValue;
 import com.example.capstone.Entity.SensorData;
@@ -49,65 +50,38 @@ public class PlantService {
                 .build()).getId();
     }
 
-    public Plant editPlant(Long id, PlantType plantType, String name) {
-        if(plantRepository.existsById(id)) {
-            Plant plant = plantRepository.findById(id).get();
-            return plantRepository.save(Plant.builder()
-                    .id(id)
-                    .name(name==null? plant.getName() : name)
-                    .plantType(plantType==null? plant.getPlantType() : plantType)
-                    .landMoisture(plant.getLandMoisture())
-                    .temperature(plant.getTemperature())
-                    .moisture(plant.getMoisture())
-                    .light(plant.getLight())
-                    .build());
-        } else {
-            throw new IllegalArgumentException("해당 ID로된 식물이 없습니다!");
-        }
-    }
-
     public boolean existsPlant(Long id) {
 
         return plantRepository.existsById(id);
     }
 
     public void addSensorData(Long id, float landMoisture, float temperature, float moisture, float light) {
+        //log.warn("센서데이터추가 : 토양 "+landMoisture + ", 온도 " + temperature + ", 조도" + light);
         Plant target = plantRepository.findById(id).get();
-        List<SensorData> landMoistures = target.getLandMoisture();
-        List<SensorData> temperatures = target.getTemperature();
-        List<SensorData> moistures = target.getMoisture();
-        List<SensorData> lights = target.getLight();
         LocalDateTime time = LocalDateTime.now();
-        landMoistures.add(sensorDataRepository.save(SensorData.builder()
+        sensorDataRepository.save(SensorData.builder()
+                .plant(target)
+                .dataType(DataType.LandMoisture)
                 .time(time)
                 .value(landMoisture)
-                .build()));
-        temperatures.add(sensorDataRepository.save(SensorData.builder()
+                .build());
+        sensorDataRepository.save(SensorData.builder()
+                .plant(target)
+                .dataType(DataType.Temperature)
                 .time(time)
                 .value(temperature)
-                .build()));
-        moistures.add(sensorDataRepository.save(SensorData.builder()
+                .build());
+        sensorDataRepository.save(SensorData.builder()
+                .plant(target)
+                .dataType(DataType.Moisture)
                 .time(time)
                 .value(moisture)
-                .build()));
-        lights.add(sensorDataRepository.save(SensorData.builder()
+                .build());
+        sensorDataRepository.save(SensorData.builder()
+                .plant(target)
+                .dataType(DataType.Light)
                 .time(time)
                 .value(light)
-                .build()));
-        plantRepository.save(Plant.builder()
-                .id(target.getId())
-                .name(target.getName())
-                .plantType(target.getPlantType())
-                .landMoisture(landMoistures)
-                .temperature(temperatures)
-                .moisture(moistures)
-                .light(lights)
-                .led(target.isLed())
-                .pump(target.isPump())
-                .fan(target.isFan())
-                .ledAuto(target.isLedAuto())
-                .pumpAuto(target.isPumpAuto())
-                .fanAuto(target.isFanAuto())
                 .build());
     }
 
@@ -124,10 +98,6 @@ public class PlantService {
                             .id(plant.getId())
                             .name(plant.getName())
                             .plantType(plant.getPlantType())
-                            .landMoisture(plant.getLandMoisture())
-                            .temperature(plant.getTemperature())
-                            .moisture(plant.getMoisture())
-                            .light(plant.getLight())
                             .fan(plant.isFan())
                             .led(plant.isLed())
                             .pump(state)
@@ -141,10 +111,6 @@ public class PlantService {
                             .id(plant.getId())
                             .name(plant.getName())
                             .plantType(plant.getPlantType())
-                            .landMoisture(plant.getLandMoisture())
-                            .temperature(plant.getTemperature())
-                            .moisture(plant.getMoisture())
-                            .light(plant.getLight())
                             .fan(state)
                             .led(plant.isLed())
                             .pump(plant.isPump())
@@ -158,14 +124,10 @@ public class PlantService {
                             .id(plant.getId())
                             .name(plant.getName())
                             .plantType(plant.getPlantType())
-                            .landMoisture(plant.getLandMoisture())
-                            .temperature(plant.getTemperature())
-                            .moisture(plant.getMoisture())
-                            .light(plant.getLight())
                             .fan(plant.isFan())
                             .led(state)
                             .pump(plant.isPump())
-                            .fan(plant.isFanAuto())
+                            .fanAuto(plant.isFanAuto())
                             .ledAuto(plant.isLedAuto())
                             .pumpAuto(plant.isPumpAuto())
                             .build());
@@ -186,10 +148,6 @@ public class PlantService {
                             .id(plant.getId())
                             .name(plant.getName())
                             .plantType(plant.getPlantType())
-                            .landMoisture(plant.getLandMoisture())
-                            .temperature(plant.getTemperature())
-                            .moisture(plant.getMoisture())
-                            .light(plant.getLight())
                             .fan(plant.isFan())
                             .led(plant.isLed())
                             .pump(plant.isLed())
@@ -203,13 +161,8 @@ public class PlantService {
                             .id(plant.getId())
                             .name(plant.getName())
                             .plantType(plant.getPlantType())
-                            .landMoisture(plant.getLandMoisture())
-                            .temperature(plant.getTemperature())
-                            .moisture(plant.getMoisture())
-                            .light(plant.getLight())
-                            .fan(plant.isFan())
                             .led(plant.isLed())
-                            .pump(plant.isLed())
+                            .pump(plant.isPump())
                             .fanAuto(state)
                             .ledAuto(plant.isLedAuto())
                             .pumpAuto(plant.isPumpAuto())
@@ -220,13 +173,9 @@ public class PlantService {
                             .id(plant.getId())
                             .name(plant.getName())
                             .plantType(plant.getPlantType())
-                            .landMoisture(plant.getLandMoisture())
-                            .temperature(plant.getTemperature())
-                            .moisture(plant.getMoisture())
-                            .light(plant.getLight())
                             .fan(plant.isFan())
                             .led(plant.isLed())
-                            .pump(plant.isLed())
+                            .pump(plant.isPump())
                             .fanAuto(plant.isFanAuto())
                             .ledAuto(state)
                             .pumpAuto(plant.isPumpAuto())

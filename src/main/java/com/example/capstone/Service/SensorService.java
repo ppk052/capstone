@@ -1,9 +1,11 @@
 package com.example.capstone.Service;
 
+import com.example.capstone.Constant.DataType;
 import com.example.capstone.Entity.Plant;
 import com.example.capstone.Entity.PlantAppropriateValue;
 import com.example.capstone.Repository.PlantAppropriateValueRepository;
 import com.example.capstone.Repository.PlantRepository;
+import com.example.capstone.Repository.SensorDataRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.type.descriptor.java.ObjectJavaType;
@@ -20,6 +22,7 @@ public class SensorService {
 
     private final PlantRepository plantRepository;
     private final PlantAppropriateValueRepository plantAppropriateValueRepository;
+    private final SensorDataRepository sensorDataRepository;
 
     public Map<String, Object> getSonsorData(Long id) {
         if(id == 0) {
@@ -39,9 +42,9 @@ public class SensorService {
             if(targetPlant.isPresent() && plantAppropriateValueRepository.findByPlantType(targetPlant.get().getPlantType()).isPresent()) {
                 PlantAppropriateValue plantValue = plantAppropriateValueRepository.findByPlantType(targetPlant.get().getPlantType()).get();
                 Map<String, Object> sensorData = new HashMap<>();
-                sensorData.put("landMoisture", targetPlant.get().getLandMoisture().get(0).getValue());
-                sensorData.put("temperature", targetPlant.get().getTemperature().get(0).getValue());
-                sensorData.put("light", targetPlant.get().getLight().get(0).getValue());
+                sensorData.put("landMoisture", sensorDataRepository.findTopByPlantAndDataTypeOrderByTimeDesc(targetPlant.get(), DataType.LandMoisture).getValue());
+                sensorData.put("temperature", sensorDataRepository.findTopByPlantAndDataTypeOrderByTimeDesc(targetPlant.get(), DataType.Temperature).getValue());
+                sensorData.put("light", sensorDataRepository.findTopByPlantAndDataTypeOrderByTimeDesc(targetPlant.get(), DataType.Light).getValue());
                 sensorData.put("LED" , targetPlant.get().isLed());
                 sensorData.put("pump", targetPlant.get().isPump());
                 sensorData.put("fan", targetPlant.get().isFan());
@@ -51,6 +54,7 @@ public class SensorService {
                 sensorData.put("LEDAuto",targetPlant.get().isLedAuto());
                 sensorData.put("pumpAuto",targetPlant.get().isPumpAuto());
                 sensorData.put("fanAuto",targetPlant.get().isFanAuto());
+                sensorData.put("lastSenorTime",sensorDataRepository.findTopByPlantAndDataTypeOrderByTimeDesc(targetPlant.get(), DataType.LandMoisture).getTime());
                 return sensorData;
             } else {
                 throw new IllegalArgumentException("id가 올바르지 않습니다!");

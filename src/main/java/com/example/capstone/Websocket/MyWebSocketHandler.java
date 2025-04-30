@@ -14,6 +14,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
@@ -33,6 +34,7 @@ public class MyWebSocketHandler extends TextWebSocketHandler {
     private static final Map<Long, WebSocketSession> sessions = new ConcurrentHashMap<>();
     private final PlantService plantService;
     private final ObjectMapper objectMapper;
+    private final PlantRepository plantRepository;
 
     @Override
     public void afterConnectionClosed(WebSocketSession session, org.springframework.web.socket.CloseStatus status) {
@@ -40,12 +42,13 @@ public class MyWebSocketHandler extends TextWebSocketHandler {
     }
 
     @Override
+    @Transactional
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
 
         String payload = message.getPayload();
         PlantRequest request = convertToObject(payload);
-        log.info("웹소켓 연결됨 : " + session.getId());
-        log.info("메세지내용 : " + request.toString());
+        //log.info("웹소켓 연결됨 : " + session.getId());
+        //log.info("메세지내용 : " + request.toString());
         switch(request.getType()) {
             //새식물
             case 0:
@@ -65,9 +68,21 @@ public class MyWebSocketHandler extends TextWebSocketHandler {
                 if(sessions.containsKey(request.getId()) && plantService.existsPlant(request.getId())) {
                     sessions.remove(request.getId());
                 }
+                Plant targetPlant = plantRepository.findById(request.getId()).get();
+                targetPlant.setLed(false);
+                targetPlant.setPump(false);
+                targetPlant.setFan(false);
+                plantRepository.save(targetPlant);
+                PlantAppropriateValue appropriateValue1 = plantService.getAppropriateValue(targetPlant.getPlantType());
                 sessions.put(request.getId(), session);
                 session.sendMessage(new TextMessage(convertToJson(LoadPlantResponse.builder()
                         .type(3)
+                        .moisture(appropriateValue1.getMoisture())
+                        .light(appropriateValue1.getLight())
+                        .temperature(appropriateValue1.getTemperature())
+                        .ledAuto(targetPlant.isLedAuto())
+                        .fanAuto(targetPlant.isFanAuto())
+                        .pumpAuto(targetPlant.isPumpAuto())
                         .build())));
                 break;
             //센서데이터전송
@@ -89,7 +104,7 @@ public class MyWebSocketHandler extends TextWebSocketHandler {
         if (session != null && session.isOpen()) {
             try {
                 session.sendMessage(new TextMessage(message));
-                log.info("메시지 전송: " + message);
+                log.warn("메시지 전송: " + message);
             } catch (IOException e) {
                 e.printStackTrace();
             }
